@@ -5,10 +5,10 @@ BINDIR  := $(TOPDIR)
 NAME    := chat
 EXE     := $(BINDIR)$(NAME)
 
-SFILES  := c
+SFILES  := cpp
 OFILES  := o
-CC      := gcc
-CFLAGS  := -Wall -Wextra -O3 -std=gnu2x -pedantic -march=native -Wnull-dereference -Winline -Wconversion -g -fsanitize=address,undefined
+CC      := g++
+CFLAGS  := -Wall -Wextra -O3 -std=c++11 -pedantic -march=native -Wnull-dereference -Winline -Wconversion -g -fsanitize=address,undefined
 LIBS    := -fsanitize=address,undefined
 
 SOURCES := $(shell find $(SRCDIR) -name "*.$(SFILES)")
