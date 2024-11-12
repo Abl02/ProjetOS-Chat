@@ -1,12 +1,18 @@
 #include <cstring>
 #include <iostream>
-#include <string>
+
 #include "args.h"
+#include "chat.h"
+#include "chatter.h"
+
+using namespace std;
 
 int main(int argc, char* argv[]) {
-  Args opt = parseArgs(argc, argv);
-  showUsername(opt.USERNAME);
-  showUsername(opt.DESTINATION);
-  std::cout << opt.IS_BOT << " / " << opt.IS_MANUAL << std::endl;
+  Args arg = parseArgs(argc, argv);
+  Chatter usr1(arg.SENDER_NAME);
+  cout << " - " << usr1.name() << endl;
+  Chatter usr2(arg.RECEIVER_NAME);
+  cout << " - " << usr2.name() << endl;
+  Chat chat(usr1, usr2);
   return 0;
 }
