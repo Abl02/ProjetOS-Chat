@@ -18,7 +18,6 @@ struct message {
 class Chat {
  public:
   Chat(Chatter sender, Chatter receiver);
-  ~Chat();
 
  private:
   int sendMsg();
@@ -31,8 +30,8 @@ class Chat {
   Chatter receiver_;
   bool open_;
 
-  std::string sendPipe_;
-  std::string recvPipe_;
+  std::string sendPath_;
+  std::string recvPath_;
   pid_t recvPid_;
 
   char rbuffer_[BUFFER_LENGTH];

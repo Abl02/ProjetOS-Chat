@@ -1,6 +1,8 @@
 #include "chat.h"
 
 #include <fcntl.h>
+#include <iomanip>
+#include <ios>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -13,7 +15,9 @@
 using namespace ERROR;
 
 Chat::Chat(Chatter sender, Chatter receiver)
-    : sender_(sender), receiver_(receiver) {
+  : sender_(sender), receiver_(receiver),
+    sendPath_("/tmp/" + sender.name() + "-" + receiver.name() + ".chat"),
+    recvPath_("/tmp/" + receiver.name() + "-" + sender.name() + ".chat") {
   if (createPipes() == 0) {
     open_ = true;
     startProcess();
@@ -24,9 +28,10 @@ int Chat::sendMsg() {
   if (!open_)
     return 1;
   else {
-    int fd = open(sendPipe_.c_str(), O_WRONLY);
-    std::cout << " [" << sender_.name() << "] ";
+    int fd = open(sendPath_.c_str(), O_WRONLY);
+    std::cout << " >>> ";
     std::cin >> wbuffer_;
+    std::cout << std::setw(30) << std::right << wbuffer_ << " [" << sender_.name() << "] " << std::endl;
     ssize_t r = write(fd, wbuffer_, BUFFER_LENGTH);
     close(fd);
     if (r < 0) {
@@ -41,7 +46,7 @@ int Chat::receiveMsg() {
   if (!open_)
     return 1;
   else {
-    int fd = open(recvPipe_.c_str(), O_RDONLY);
+    int fd = open(recvPath_.c_str(), O_RDONLY);
     ssize_t r = read(fd, rbuffer_, BUFFER_LENGTH);
     close(fd);
     if (r == -1) {
@@ -54,10 +59,7 @@ int Chat::receiveMsg() {
 }
 
 int Chat::createPipes() {
-  sendPipe_ = "/tmp/" + sender_.name() + "-" + receiver_.name() + ".chat";
-  recvPipe_ = "/tmp/" + receiver_.name() + "-" + sender_.name() + ".chat";
-  mkfifo(sendPipe_.c_str(), 0666);
-  mkfifo(recvPipe_.c_str(), 0666);
+  mkfifo(sendPath_.c_str(), 0666);
   /*
   if (pipe(sendPipe_) < 0) {
     perror("pipe()");
