@@ -14,3 +14,4 @@ const std::string INVALID_OPTION(std::string opt) {
   return "Error: invalid option '" + opt + "'\n";
 };
 }  // namespace ERROR
+

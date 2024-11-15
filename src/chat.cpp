@@ -14,6 +14,18 @@
 
 using namespace ERROR;
 
+// TODO: Revoire tout le error handling
+// TODO: add implementation pour destructor
+//   detruire les pipes
+//   desaloué les ptr
+// TODO: add render function
+// TODO: implementation pour --bot --manuel
+// TODO: pipes envoie une copie du message recue sur cin
+// TODO: Shared memory
+//   Le process send doit stocker les message envoyé sur la memoire partagé
+//   pareil pour le process receiver
+// TODO: ptr to chatter
+
 Chat::Chat(Chatter sender, Chatter receiver)
   : sender_(sender), receiver_(receiver),
     sendPath_("/tmp/" + sender.name() + "-" + receiver.name() + ".chat"),
@@ -25,6 +37,7 @@ Chat::Chat(Chatter sender, Chatter receiver)
 }
 
 int Chat::sendMsg() {
+  // TODO: modify implementation (optimisation, storing of msg, error handling)
   if (!open_)
     return 1;
   else {
@@ -43,6 +56,7 @@ int Chat::sendMsg() {
 }
 
 int Chat::receiveMsg() {
+  // TODO: modify implementation (optimisation, storing of msg, error handling)
   if (!open_)
     return 1;
   else {
@@ -59,21 +73,8 @@ int Chat::receiveMsg() {
 }
 
 int Chat::createPipes() {
+  // TODO: Check error
   mkfifo(sendPath_.c_str(), 0666);
-  /*
-  if (pipe(sendPipe_) < 0) {
-    perror("pipe()");
-    std::cerr << SENDER_PIPE_ERROR << std::endl;
-    return 1;
-  }
-  if (pipe(recvPipe_) < 0) {
-    close(sendPipe_[READ]);
-    close(sendPipe_[WRITE]);
-    std::cerr << RECEIVER_PIPE_ERROR << std::endl;
-    perror("pipe()");
-    return 1;
-  }
-  */
   return 0;
 }
 

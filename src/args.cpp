@@ -10,6 +10,10 @@ using namespace ERROR;
 
 Args::~Args() {}
 
+// TODO: move showHelp to utils
+//   Pour une implementation plus generique, utilisation dans d'autre fichier
+// TODO: revoire tout le error handling et les fuite de memoires
+
 void showHelp() {
   std::cout << "Usage: chat <username> <destination> [OPTION...]\n"
             << "\n"
@@ -33,8 +37,10 @@ Args parseArgs(int argc, char* argv[]) {
   // Check for arguments
   if (argc < 3) {
     std::cerr << MISSING_ARGUMENT << std::endl << MORE_INFO << std::endl;
-    exit(1);  // add exception
+    exit(1);  // TODO: add exception
   }
+  // TODO: check for special characters in usernames
+  // TODO: check for length
   std::string senderName = argv[1];
   std::string receiverName = argv[2];
   bool bot = 0;
@@ -53,7 +59,7 @@ Args parseArgs(int argc, char* argv[]) {
       else {
         std::cerr << INVALID_OPTION(argv[i]) << std::endl
                   << MORE_INFO << std::endl;
-        exit(1);  // add exception
+        exit(1);  // TODO: add exception
       }
     }
   }

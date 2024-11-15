@@ -7,6 +7,8 @@
 
 using namespace std;
 
+// TODO: Implementation des signaux (je sais pas ou le mettre)
+
 int main(int argc, char* argv[]) {
   Args arg = parseArgs(argc, argv);
   Chatter usr1(arg.SENDER_NAME);
