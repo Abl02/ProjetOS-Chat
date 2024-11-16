@@ -1,8 +1,5 @@
-#include "chat.h"
-
 #include <fcntl.h>
 #include <iomanip>
-#include <ios>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -10,7 +7,8 @@
 #include <cstring>
 #include <iostream>
 
-#include "utils.h"
+#include "chat.hpp"
+#include "utils.hpp"
 
 using namespace ERROR;
 

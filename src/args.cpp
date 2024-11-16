@@ -1,68 +1,55 @@
-#include "args.h"
-
 #include <cstring>
-#include <iostream>
 #include <string>
 
-#include "utils.h"
+#include "args.hpp"
 
-using namespace ERROR;
+Args::Args(std::string sender, std::string receiver, bool bot, bool manual, int status)
+  :SENDER_NAME(sender),RECEIVER_NAME(receiver),BOT_MODE(bot), MANUAL_MODE(manual), error({status,""}){};
 
-Args::~Args() {}
+Args::Args(int status)
+  :SENDER_NAME(""),RECEIVER_NAME(""),BOT_MODE(false), MANUAL_MODE(false),error({status,""}) {};
 
-// TODO: move showHelp to utils
-//   Pour une implementation plus generique, utilisation dans d'autre fichier
-// TODO: revoire tout le error handling et les fuite de memoires
+Args::Args(int status, std::string message)
+  :SENDER_NAME(""),RECEIVER_NAME(""),BOT_MODE(false), MANUAL_MODE(false),error({status,message}) {};
 
-void showHelp() {
-  std::cout << "Usage: chat <username> <destination> [OPTION...]\n"
-            << "\n"
-            << "Arguments:\n"
-            << "  username          First username\n"
-            << "  destination       Second username (destination)\n"
-            << "\n"
-            << "Options:\n"
-            << "  -h, --help         Print this help\n"
-            << "  -b, --bot          Print the SVN version\n"
-            << "  -m, --manuel       Print the proxy version\n";
+Args::~Args() {};
+
+// check if --help option is present in first position
+bool isHelpRequest(int argc, char* argv[]) {
+  return argc > 1 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"));
+}
+
+int processOptions(int argc, char* argv[], bool& bot, bool& manual) {
+  // return the index of the first found invalid option
+  for (int i = 3; i < argc; ++i) {
+    char* opt = argv[i];
+    if (!strcmp(opt, "-b") || !strcmp(opt, "--bot"))
+      bot = 1;
+    else if (!strcmp(opt, "-m") || !strcmp(opt, "--manuel"))
+      manual = 1;
+    else if (!strcmp(opt, "-h") || !strcmp(opt, "--help"))
+      continue;
+    else return i;
+  }
+  return 0;
 }
 
 Args parseArgs(int argc, char* argv[]) {
-  // check if --help option is present
-  if (argc > 1 &&
-      (std::string(argv[1]) == "-h" || std::string(argv[1]) == "--help")) {
-    showHelp();
-    exit(0);
-  }
-  // Check for arguments
-  if (argc < 3) {
-    std::cerr << MISSING_ARGUMENT << std::endl << MORE_INFO << std::endl;
-    exit(1);  // TODO: add exception
-  }
-  // TODO: check for special characters in usernames
-  // TODO: check for length
-  std::string senderName = argv[1];
-  std::string receiverName = argv[2];
-  bool bot = 0;
-  bool manual = 0;
-  // Check for options
+  if (isHelpRequest(argc,argv)) return {5}; // Status 5: Help Request
+  if (argc < 3) return {1}; // Status 1: Missing Arguments
+  char* senderName = argv[1];
+  char* receiverName = argv[2];
+  bool bot = false;
+  bool manual = false;
+  // Check if usernames has valid length
+  if (!(strlen(senderName) <= 30)) return {2}; // Status 2: Invalid Length
+  if (!(strlen(receiverName) <= 30)) return {2};
+  // Check if usernames contains invalid chars
+  if (strpbrk(senderName, "/-[]") != 0) return {3}; // Status 3: Invalid Char
+  if (strpbrk(receiverName, "/-[]") != 0) return {3};
   if (argc > 3) {
-    for (int i = 3; i < argc; ++i) {
-      if (strcmp(argv[i], "-b") == 0)
-        bot = 1;
-      else if (strcmp(argv[i], "-m") == 0)
-        manual = 1;
-      else if (strcmp(argv[i], "--bot") == 0)
-        bot = 1;
-      else if (strcmp(argv[i], "--manuel") == 0)
-        manual = 1;
-      else {
-        std::cerr << INVALID_OPTION(argv[i]) << std::endl
-                  << MORE_INFO << std::endl;
-        exit(1);  // TODO: add exception
-      }
-    }
+    int id=processOptions(argc, argv, bot, manual);
+    if (id != 0) return {4,std::string(argv[id])}; // Status 4: Invalid Option
   }
-
-  return {senderName, receiverName, bot, manual};
+  return {std::string(senderName),std::string(receiverName), bot, manual};
 }
