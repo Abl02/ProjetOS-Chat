@@ -1,33 +1,21 @@
 #ifndef CHAT_H
 #define CHAT_H
 
-#include <sched.h>
-
 #include <string>
 
-#include "chatter.h"
-
-#define BUFFER_LENGTH 80
-
-class Chatter;
-
-struct message {
-  std::string text;
-};
+const int BUFFER_LENGTH = 80;
 
 class Chat {
  public:
-  Chat(Chatter sender, Chatter receiver);
-
+  Chat(std::string sender, std::string receiver);
  private:
   int sendMsg();
   int receiveMsg();
-
   int createPipes();
   int startProcess();
 
-  Chatter sender_;
-  Chatter receiver_;
+  std::string sender_;
+  std::string receiver_;
   bool open_;
 
   std::string sendPath_;

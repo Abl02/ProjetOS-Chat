@@ -1,8 +1,5 @@
-#include "chat.h"
-
 #include <fcntl.h>
-#include <iomanip>
-#include <ios>
+#include <ostream>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -10,7 +7,9 @@
 #include <cstring>
 #include <iostream>
 
-#include "utils.h"
+#include "chat.hpp"
+#include "utils.hpp"
+
 
 using namespace ERROR;
 
@@ -26,55 +25,72 @@ using namespace ERROR;
 //   pareil pour le process receiver
 // TODO: ptr to chatter
 
-Chat::Chat(Chatter sender, Chatter receiver)
+void deleteLastLine() {
+  std::cout << "\033[F";
+  std::cout << "\033[K";
+  std::cout.flush();
+}
+
+Chat::Chat(std::string sender, std::string receiver)
   : sender_(sender), receiver_(receiver),
-    sendPath_("/tmp/" + sender.name() + "-" + receiver.name() + ".chat"),
-    recvPath_("/tmp/" + receiver.name() + "-" + sender.name() + ".chat") {
+    sendPath_("/tmp/" + sender + "-" + receiver + ".chat"),
+    recvPath_("/tmp/" + receiver + "-" + sender + ".chat") {
   if (createPipes() == 0) {
-    open_ = true;
     startProcess();
   }
 }
 
 int Chat::sendMsg() {
   // TODO: modify implementation (optimisation, storing of msg, error handling)
-  if (!open_)
-    return 1;
-  else {
-    int fd = open(sendPath_.c_str(), O_WRONLY);
-    std::cout << " >>> ";
-    std::cin >> wbuffer_;
-    std::cout << std::setw(30) << std::right << wbuffer_ << " [" << sender_.name() << "] " << std::endl;
-    ssize_t r = write(fd, wbuffer_, BUFFER_LENGTH);
-    close(fd);
-    if (r < 0) {
-      perror("parent::write()");
-      open_ = 0;
-    }
+  if (!open_) return 1;
+  int fd = open(sendPath_.c_str(), O_WRONLY);
+  if (fd == -1) {
+    perror("Failed to open");
+    return -1;
+  }
+  std::cin.getline(wbuffer_, BUFFER_LENGTH);
+  deleteLastLine();
+  std::cout << " [" <<"\x1B[4m" << sender_ << "\x1B[0m" << "] " << wbuffer_ <<std::endl;
+  // Check size
+  ssize_t r = write(fd, wbuffer_, BUFFER_LENGTH);
+  close(fd);
+  if (r < 0) {
+    perror("parent::write()");
+    open_ = 0;
+    return -1;
   }
   return 0;
 }
 
 int Chat::receiveMsg() {
   // TODO: modify implementation (optimisation, storing of msg, error handling)
-  if (!open_)
-    return 1;
-  else {
-    int fd = open(recvPath_.c_str(), O_RDONLY);
-    ssize_t r = read(fd, rbuffer_, BUFFER_LENGTH);
-    close(fd);
-    if (r == -1) {
-      perror("child::read()");
-      open_ = 0;
-    }
-    std::cout << " [" << receiver_.name() << "] " << rbuffer_ << std::endl;
+  if (!open_) return 1;
+  int fd = open(recvPath_.c_str(), O_RDONLY);
+  if (fd == -1) {
+    perror("Failed to open");
+    return -1;
+  }
+  // Check size
+  ssize_t r = read(fd, rbuffer_, BUFFER_LENGTH);
+  std::cout << " [" <<"\x1B[4m" << receiver_ << "\x1B[0m" << "] "<< rbuffer_ << std::endl;
+  close(fd);
+  if (r == -1) {
+    perror("child::read()");
+    open_ = 0;
   }
   return 0;
 }
 
 int Chat::createPipes() {
   // TODO: Check error
+  // TODO: Implementation de semaphore binaire pour attendre la creation du
+  //   pipe
   mkfifo(sendPath_.c_str(), 0666);
+  struct stat buffer;   
+  while (stat (recvPath_.c_str(), &buffer) != 0) {
+    sleep(1); // Temporraire a remplacer par un semaphore binaire
+  }
+  open_ = true;
   return 0;
 }
 

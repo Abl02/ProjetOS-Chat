@@ -8,7 +8,7 @@ EXE     := $(BINDIR)$(NAME)
 SFILES  := cpp
 OFILES  := o
 CC      := g++
-CFLAGS  := -Wall -Wextra -O3 -std=c++11 -pedantic -march=native -Wnull-dereference -Winline -Wconversion -g -fsanitize=address,undefined
+CFLAGS  := -Wall -Wextra -O3 -std=c++17 -pedantic -march=native -Wnull-dereference -Winline -Wconversion -g -fsanitize=address,undefined
 LIBS    := -fsanitize=address,undefined
 
 SOURCES := $(shell find $(SRCDIR) -name "*.$(SFILES)")

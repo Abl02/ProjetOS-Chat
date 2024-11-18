@@ -1,17 +1,20 @@
-#include "utils.h"
+#include <iostream>
 
-namespace ERROR {
-// Error message
-const std::string SENDER_PIPE_ERROR =
-    "Error pipe(): Failed to create sender pipe";
-const std::string RECEIVER_PIPE_ERROR =
-    "Error pipe(): Failed to create receiver pipe";
-const std::string FORK_ERROR = "Error fork(): Failed to fork child process";
-const std::string MISSING_ARGUMENT =
-    "Error: missing argument, Usage: chat <username> <destination>";
-const std::string MORE_INFO = "try 'chat --help' for more information";
-const std::string INVALID_OPTION(std::string opt) {
+#include "utils.hpp"
+
+const std::string ERROR::INVALID_OPTION(std::string opt) {
   return "Error: invalid option '" + opt + "'\n";
-};
-}  // namespace ERROR
+}
 
+void showHelp() {
+  std::cout << "Usage: chat <username> <destination> [OPTION...]\n"
+            << "\n"
+            << "Arguments:\n"
+            << "  username          First username\n"
+            << "  destination       Second username (destination)\n"
+            << "\n"
+            << "Options:\n"
+            << "  -h, --help         Print this help\n"
+            << "  -b, --bot          Print the SVN version\n"
+            << "  -m, --manuel       Print the proxy version\n";
+}
