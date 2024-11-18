@@ -1,5 +1,5 @@
-#ifndef OPT_H
-#define OPT_H
+#ifndef ARG_H
+#define ARG_H
 
 #include <string>
 
@@ -19,9 +19,6 @@ struct Args {
   const bool MANUAL_MODE;
   argsError error;
 };
-
-bool isHelpRequest(int argc, char* argv[]);
-int processOptions(int argc, char* argv[], bool& bot, bool& manual);
 
 Args parseArgs(int argc, char* argv[]);
  

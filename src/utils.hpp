@@ -1,6 +1,7 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <map>
 #include <string>
 
 namespace COLORS {
@@ -40,6 +41,7 @@ namespace ERROR { // Error message
     "Try 'chat --help' for more information.\n";
   const std::string INVALID_OPTION(std::string opt);
 }
+
 
 void showHelp();
 

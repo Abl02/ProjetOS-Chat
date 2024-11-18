@@ -4,7 +4,6 @@
 
 #include "args.hpp"
 #include "chat.hpp"
-#include "chatter.hpp"
 #include "utils.hpp"
 
 using namespace ERROR;
@@ -32,8 +31,8 @@ int main(int argc, char* argv[]) {
       showHelp();
       return 0;
   }
-  Chatter usr1(arg.SENDER_NAME);
-  Chatter usr2(arg.RECEIVER_NAME);
+  std::string usr1(arg.SENDER_NAME);
+  std::string usr2(arg.RECEIVER_NAME);
   Chat chat(usr1, usr2);
   return 0;
 }
