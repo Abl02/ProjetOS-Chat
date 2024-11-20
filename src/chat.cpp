@@ -25,11 +25,6 @@ using namespace ERROR;
 //   pareil pour le process receiver
 // TODO: ptr to chatter
 
-void deleteLastLine() {
-  std::cout << "\033[F";
-  std::cout << "\033[K";
-  std::cout.flush();
-}
 
 Chat::Chat(std::string sender, std::string receiver)
   : sender_(sender), receiver_(receiver),
@@ -49,7 +44,6 @@ int Chat::sendMsg() {
     return -1;
   }
   std::cin.getline(wbuffer_, BUFFER_LENGTH);
-  deleteLastLine();
   std::cout << " [" <<"\x1B[4m" << sender_ << "\x1B[0m" << "] " << wbuffer_ <<std::endl;
   // Check size
   ssize_t r = write(fd, wbuffer_, BUFFER_LENGTH);
