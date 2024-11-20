@@ -5,7 +5,7 @@
 #include <vector>
 #include <unistd.h>
 #include <sys/wait.h>
-#include "sharedmem.h"
+#include "sharedmem.hpp"
 
     SharedMemory::SharedMemory() {
         shared_mem = (char*)create_memory(4096);
