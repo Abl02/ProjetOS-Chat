@@ -1,7 +1,6 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include <map>
 #include <string>
 
 namespace COLORS {
@@ -39,9 +38,8 @@ namespace ERROR { // Error message
     "chat: The length of the usernames must be under 30 characters.\n";
   inline const std::string MORE_INFO = 
     "Try 'chat --help' for more information.\n";
-  const std::string INVALID_OPTION(std::string opt);
+  const std::string UNKNOWN_OPTION(std::string opt);
 }
-
 
 void showHelp();
 

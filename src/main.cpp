@@ -11,8 +11,9 @@ using namespace ERROR;
 // TODO: Implementation des signaux (je sais pas ou le mettre)
 
 int main(int argc, char* argv[]) {
-  Args arg = parseArgs(argc, argv);
-  switch (arg.error.status) {
+  int errStatus{};std::string errMsg; 
+  Args arg = parseArgs(argc, argv, &errStatus, &errMsg);
+  switch (errStatus) {
     case 0: // No error
       break;
     case 1:
@@ -25,7 +26,7 @@ int main(int argc, char* argv[]) {
       std::cerr << INVALID_USERNAME_CHARACTER << std::endl;
       return 3;
     case 4:
-      std::cerr << INVALID_OPTION(arg.error.message) << std::endl << MORE_INFO << std::endl;
+      std::cerr << UNKNOWN_OPTION(errMsg) << std::endl << MORE_INFO << std::endl;
       return 4;
     case 5:
       showHelp();

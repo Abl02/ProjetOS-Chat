@@ -1,26 +1,33 @@
+#include <cstdlib>
 #include <cstring>
 #include <string>
 
 #include "args.hpp"
+#include "utils.hpp"
 
-Args::Args(std::string sender, std::string receiver, bool bot, bool manual, int status)
-  :SENDER_NAME(sender),RECEIVER_NAME(receiver),BOT_MODE(bot), MANUAL_MODE(manual), error({status,""}){};
+Args::Args(std::string sender, std::string receiver, bool bot, bool manual)
+  :SENDER_NAME(sender),RECEIVER_NAME(receiver),BOT_MODE(bot), MANUAL_MODE(manual) {};
 
-Args::Args(int status)
-  :SENDER_NAME(""),RECEIVER_NAME(""),BOT_MODE(false), MANUAL_MODE(false),error({status,""}) {};
-
-Args::Args(int status, std::string message)
-  :SENDER_NAME(""),RECEIVER_NAME(""),BOT_MODE(false), MANUAL_MODE(false),error({status,message}) {};
+Args::Args()
+  :SENDER_NAME(""),RECEIVER_NAME(""),BOT_MODE(0), MANUAL_MODE(0) {};
 
 Args::~Args() {};
 
-// check if --help option is present in first position
+/* Check if --help option is present in first position. */
 bool isHelpRequest(int argc, char* argv[]) {
   return argc > 1 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"));
 }
 
+/**
+ * Processes command-line options and sets flags for bot and manual modes.
+ *
+ * @param argc The number of command-line arguments.
+ * @param argv The array of command-line argument.
+ * @param bot Reference to a boolean flag indicating bot mode.
+ * @param manual Reference to a boolean flag indicating manual mode.
+ * @return The index of the first invalid option. Returns 0 if all options are valid.
+ */
 int processOptions(int argc, char* argv[], bool& bot, bool& manual) {
-  // return the index of the first found invalid option
   for (int i = 3; i < argc; ++i) {
     char* opt = argv[i];
     if (!strcmp(opt, "-b") || !strcmp(opt, "--bot"))
@@ -34,22 +41,44 @@ int processOptions(int argc, char* argv[], bool& bot, bool& manual) {
   return 0;
 }
 
-Args parseArgs(int argc, char* argv[]) {
-  if (isHelpRequest(argc,argv)) return {5}; // Status 5: Help Request
-  if (argc < 3) return {1}; // Status 1: Missing Arguments
-  char* senderName = argv[1];
-  char* receiverName = argv[2];
-  bool bot = false;
-  bool manual = false;
-  // Check if usernames has valid length
-  if (!(strlen(senderName) <= 30)) return {2}; // Status 2: Invalid Length
-  if (!(strlen(receiverName) <= 30)) return {2};
-  // Check if usernames contains invalid chars
-  if (strpbrk(senderName, "/-[]") != 0) return {3}; // Status 3: Invalid Char
-  if (strpbrk(receiverName, "/-[]") != 0) return {3};
+/**
+ * Checks if the username has a valid length and does not contain any invalid characters.
+ * 
+ * @param name The username to check.
+ * @param err Pointer to integer to store error status.
+ * @return 'true' if the username is valid, 'false' otherwise.
+ */
+bool isValidName(const std::string name, int* err) {
+  if (name.length() > MAX_NAME_LENGTH) {
+    if (err) *err = 2; // Status 2: Invalid Length
+    return false;
+  }
+  if (name.find_first_of(INVALID_CHARS) != std::string::npos) {
+    if (err) *err = 3; // Status 3: Invalid char
+    return false;
+  }
+  return true;
+}
+
+Args parseArgs(int argc, char* argv[], int* err, std::string* msg) {
+  if (isHelpRequest(argc,argv)) {
+    showHelp();exit(0); // Help request
+  }
+  if (argc < 3) {
+    if (err) *err=1; // Status 1: Missing Argument
+    return{};
+  }
+  std::string senderName = std::string(argv[1]);
+  std::string receiverName = std::string(argv[2]);
+  bool bot = false;bool manual = false;
+  if (!isValidName(senderName, err)) return {};
+  if (!isValidName(receiverName, err)) return {};
   if (argc > 3) {
     int id=processOptions(argc, argv, bot, manual);
-    if (id != 0) return {4,std::string(argv[id])}; // Status 4: Invalid Option
+    if (id != 0) {
+      if (err) *err=4; // Status 4: Invalid Option
+      if (msg) *msg=std::string(argv[id]);
+    }
   }
-  return {std::string(senderName),std::string(receiverName), bot, manual};
+  return {senderName,receiverName, bot, manual};
 }

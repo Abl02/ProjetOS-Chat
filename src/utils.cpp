@@ -2,12 +2,12 @@
 
 #include "utils.hpp"
 
-const std::string ERROR::INVALID_OPTION(std::string opt) {
-  return "Error: invalid option '" + opt + "'\n";
+const std::string ERROR::UNKNOWN_OPTION(std::string opt) {
+  return "Error: Unknown option '" + opt + "'\n";
 }
 
 void showHelp() {
-  std::cout << "Usage: chat <username> <destination> [OPTION...]\n"
+  std::cout << "Usage: chat pseudo_utilisateur pseudo_destinataire [--bot] [--manuel]\n"
             << "\n"
             << "Arguments:\n"
             << "  username          First username\n"
@@ -15,6 +15,6 @@ void showHelp() {
             << "\n"
             << "Options:\n"
             << "  -h, --help         Print this help\n"
-            << "  -b, --bot          Print the SVN version\n"
-            << "  -m, --manuel       Print the proxy version\n";
+            << "  -b, --bot          Enable bot mode. Disables nickname highlighting and message display.\n"
+            << "  -m, --manuel       Enable manual mode. Hides incoming messages until triggered\n";
 }
