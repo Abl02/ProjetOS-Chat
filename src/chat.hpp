@@ -1,23 +1,29 @@
 #ifndef CHAT_H
 #define CHAT_H
 
+#include <memory>
 #include <string>
+#include "args.hpp"
 
 const int BUFFER_LENGTH = 80;
+
+class Args;
 
 class Chat {
  public:
   Chat(std::string sender, std::string receiver);
+  Chat(std::unique_ptr<Args> arg);
+  ~Chat();
+
  private:
   int sendMsg();
   int receiveMsg();
   int createPipes();
   int startProcess();
 
-  std::string sender_;
-  std::string receiver_;
-  bool open_;
+  std::unique_ptr<Args> arg_;
 
+  bool open_;
   std::string sendPath_;
   std::string recvPath_;
   pid_t recvPid_;
