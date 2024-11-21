@@ -11,6 +11,7 @@
 
 #include "chat.hpp"
 #include "utils.hpp"
+#include "signaux.hpp"
 
 using namespace ERROR;
 
@@ -26,8 +27,8 @@ using namespace ERROR;
 //   pareil pour le process receiver
 // TODO: ptr to chatter
 
-Chat::Chat(std::string sender, std::string receiver)
-    : arg_(std::make_unique<Args>(sender, receiver, 0, 0)),
+Chat::Chat(std::string sender, std::string receiver, bool manual_mode)
+    : arg_(std::make_unique<Args>(sender, receiver, 0, manual_mode)),
       sendPath_("/tmp/" + arg_->SENDER_NAME + "-" + arg_->RECEIVER_NAME + ".chat"),
       recvPath_("/tmp/" + arg_->RECEIVER_NAME + "-" + arg_->SENDER_NAME + ".chat") {
   if (createPipes() == 0) {
@@ -36,16 +37,35 @@ Chat::Chat(std::string sender, std::string receiver)
 }
 
 Chat::Chat(std::unique_ptr<Args> arg)
-    : arg_(std::move(arg)),
+    : arg_(std::move(arg)),parentPid_(getpid()), recvPid_(-1),
       sendPath_("/tmp/" + arg_->SENDER_NAME + "-" + arg_->RECEIVER_NAME + ".chat"),
       recvPath_("/tmp/" + arg_->RECEIVER_NAME + "-" + arg_->SENDER_NAME + ".chat") {
+      SetChatInstance(*this);
   if (createPipes() == 0) {
-    startProcess();
+    startProcess();  
   }
 }
 
 Chat::~Chat() {
 }
+
+
+pid_t Chat::getParentPid() {
+    return parentPid_;
+}
+
+pid_t Chat::getSecondProcessPID() {
+    return recvPid_;
+}
+
+bool Chat::arePipesOpened() {
+    return open_;
+}
+
+bool Chat::isManualMode() {
+    return arg_->MANUAL_MODE;
+}
+
 
 int Chat::sendMsg() {
   // TODO: modify implementation (optimisation, storing of msg, error handling)
@@ -54,6 +74,9 @@ int Chat::sendMsg() {
   if (fd == -1) {
     perror("Failed to open");
     return -1;
+  }
+  if (arg_->MANUAL_MODE) {
+    afficheMessageEnAttente();
   }
   std::cin.getline(wbuffer_, BUFFER_LENGTH);
   std::cout << " ["
@@ -78,9 +101,13 @@ int Chat::receiveMsg() {
     return -1;
   }
   ssize_t r = read(fd, rbuffer_, BUFFER_LENGTH);
-  std::cout << " ["
-            << "\x1B[4m" << arg_->RECEIVER_NAME << "\x1B[0m"
-            << "] " << rbuffer_ << std::endl;
+  if (arg_->MANUAL_MODE) {
+    std::cout << '\a' << std::flush;
+    std::string message(rbuffer_); 
+    shared_memory_.add_message(message);
+  } else {
+    std::cout << " [" << "\x1B[4m" << arg_->RECEIVER_NAME << "\x1B[0m" << "] " << rbuffer_ << std::endl;
+  }
   close(fd);
   if (r == -1) {
     perror("child::read()");
@@ -122,4 +149,16 @@ int Chat::startProcess() {
     return 1;
   }
   return 0;
+}
+
+void Chat::afficheMessageEnAttente() {
+  std::vector<std::string> messages = shared_memory_.get_messages();
+   if (messages.empty()) {
+        return;
+    }
+  std::cout << "Messages en attente :\n";
+    for (const auto& message : messages) {
+        std::cout << message << "\n";
+    }
+    shared_memory_.reset_memory();
 }

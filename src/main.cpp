@@ -6,12 +6,12 @@
 #include "args.hpp"
 #include "chat.hpp"
 #include "utils.hpp"
+#include "signaux.hpp"
 
 using namespace ERROR;
 
-// TODO: Implementation des signaux (je sais pas ou le mettre)
-
 int main(int argc, char* argv[]) {
+  SetupSignaux();
   int errStatus{};
   std::string errMsg;
   std::unique_ptr<Args> arg = std::make_unique<Args>(parseArgs(argc, argv, &errStatus, &errMsg));
