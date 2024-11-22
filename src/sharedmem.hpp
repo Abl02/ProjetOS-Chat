@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+const int MEMORY_SIZE = 4096;
+
 struct SharedMemory {
  public:
   SharedMemory();

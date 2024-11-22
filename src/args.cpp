@@ -12,7 +12,7 @@ Args::Args(std::string sender, std::string receiver, bool bot, bool manual)
       MANUAL_MODE(manual){};
 
 Args::Args()
-    : SENDER_NAME(""), RECEIVER_NAME(""), BOT_MODE(0), MANUAL_MODE(0){};
+    : SENDER_NAME(""), RECEIVER_NAME(""), BOT_MODE(false), MANUAL_MODE(false){};
 
 Args::~Args(){};
 
@@ -34,14 +34,18 @@ bool isHelpRequest(int argc, char* argv[]) {
 int processOptions(int argc, char* argv[], bool& bot, bool& manual) {
   for (int i = 3; i < argc; ++i) {
     char* opt = argv[i];
-    if (!strcmp(opt, "-b") || !strcmp(opt, "--bot"))
-      bot = 1;
-    else if (!strcmp(opt, "-m") || !strcmp(opt, "--manuel"))
-      manual = 1;
-    else if (!strcmp(opt, "-h") || !strcmp(opt, "--help"))
+    if (!strcmp(opt, "-b") || !strcmp(opt, "--bot")) {
+      bot = true;
+    }
+    else if (!strcmp(opt, "-m") || !strcmp(opt, "--manuel")) {
+      manual = true;
+    }
+    else if (!strcmp(opt, "-h") || !strcmp(opt, "--help")) {
       continue;
-    else
+    }
+    else {
       return i;
+    }
   }
   return 0;
 }
@@ -54,7 +58,7 @@ int processOptions(int argc, char* argv[], bool& bot, bool& manual) {
  * @param err Pointer to integer to store error status.
  * @return 'true' if the username is valid, 'false' otherwise.
  */
-bool isValidName(const std::string name, int* err) {
+bool isValidName(const std::string &name, int* err) {
   if (name.length() > MAX_NAME_LENGTH) {
     if (err) *err = 2;  // Status 2: Invalid Length
     return false;
@@ -82,10 +86,10 @@ Args parseArgs(int argc, char* argv[], int* err, std::string* msg) {
   if (!isValidName(senderName, err)) return {};
   if (!isValidName(receiverName, err)) return {};
   if (argc > 3) {
-    int id = processOptions(argc, argv, bot, manual);
-    if (id != 0) {
+    int index = processOptions(argc, argv, bot, manual);
+    if (index != 0) {
       if (err) *err = 4;  // Status 4: Invalid Option
-      if (msg) *msg = std::string(argv[id]);
+      if (msg) *msg = std::string(argv[index]);
     }
   }
   return {senderName, receiverName, bot, manual};
