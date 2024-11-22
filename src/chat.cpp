@@ -45,7 +45,7 @@ Chat::Chat(std::unique_ptr<Args> arg)
       recvPath_("/tmp/" + arg_->RECEIVER_NAME + "-" + arg_->SENDER_NAME + ".chat"),
       parentPid_(getpid()),
       recvPid_(-1){
-  SerChatInstance(*this);
+  SetChatInstance(*this);
   chatID_ = generateID();
   initSemaphore();
   if (createPipe() == 0) {
