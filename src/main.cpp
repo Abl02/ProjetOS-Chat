@@ -1,17 +1,17 @@
-#include <cstdio>
-#include <cstring>
 #include <iostream>
 #include <memory>
+#include <string>
+#include <utility>
 
 #include "args.hpp"
 #include "chat.hpp"
 #include "utils.hpp"
+#include "signals.hpp"
 
 using namespace ERROR;
 
-// TODO: Implementation des signaux (je sais pas ou le mettre)
-
 int main(int argc, char* argv[]) {
+  SetupSignaux();
   int errStatus{};
   std::string errMsg;
   std::unique_ptr<Args> arg = std::make_unique<Args>(parseArgs(argc, argv, &errStatus, &errMsg));
@@ -31,9 +31,6 @@ int main(int argc, char* argv[]) {
       std::cerr << UNKNOWN_OPTION(errMsg) << std::endl
                 << MORE_INFO << std::endl;
       return 4;
-    case 5:
-      showHelp();
-      return 0;
   }
   Chat chat(std::move(arg));
   return 0;

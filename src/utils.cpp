@@ -1,8 +1,9 @@
+#include <iostream>
+#include <string>
+
 #include "utils.hpp"
 
-#include <iostream>
-
-const std::string ERROR::UNKNOWN_OPTION(std::string opt) {
+std::string ERROR::UNKNOWN_OPTION(const std::string &opt) {
   return "Error: Unknown option '" + opt + "'\n";
 }
 

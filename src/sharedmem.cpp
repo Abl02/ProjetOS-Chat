@@ -1,14 +1,12 @@
-#include "sharedmem.hpp"
-
+#include <string>
 #include <sys/mman.h>
-#include <sys/wait.h>
-#include <unistd.h>
-
 #include <cstring>
 #include <vector>
 
+#include "sharedmem.hpp"
+
 SharedMemory::SharedMemory() {
-  shared_mem = (char*)create_memory(4096);
+  shared_mem = static_cast<char*>(create_memory(MEMORY_SIZE));
   shared_mem[0] = '\0';
 }
 
@@ -28,7 +26,7 @@ std::vector<std::string> SharedMemory::get_messages() {
 
 bool SharedMemory::add_message(const std::string& message) {
   size_t len = strlen(shared_mem);
-  if (len + message.size() + 1 < 4096) {
+  if (len + message.size() + 1 < MEMORY_SIZE) {
     strcat(shared_mem, message.c_str());
     strcat(shared_mem, "\n");
     return true;
@@ -37,8 +35,8 @@ bool SharedMemory::add_message(const std::string& message) {
 }
 
 void SharedMemory::reset_memory() {
-  munmap(shared_mem, 4096);
-  shared_mem = (char*)create_memory(4096);
+  munmap(shared_mem, MEMORY_SIZE);
+  shared_mem = static_cast<char*>(create_memory(MEMORY_SIZE));
 }
 
 void* SharedMemory::create_memory(size_t size) {
