@@ -8,7 +8,7 @@
 #include "args.hpp"
 #include "sharedmem.hpp" 
 
-const int BUFFER_LENGTH = 80;
+const int BUFFER_LENGTH = 128;
 
 struct Args;
 
@@ -24,6 +24,8 @@ class Chat {
   pid_t getSecondProcessPID();
   bool arePipesOpened();
   bool isManualMode();
+  void DestroyFileDescriptors();
+  void DestroyPipe();
 
  private:
   void showMsg(const std::string& name, const std::string& message);
@@ -50,6 +52,10 @@ class Chat {
 
   char rbuffer_[BUFFER_LENGTH];
   char wbuffer_[BUFFER_LENGTH];
+
+  int Parent_Write_fd;
+  int Child_Read_fd;
 };
 
 #endif
+
