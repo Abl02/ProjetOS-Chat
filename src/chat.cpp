@@ -75,6 +75,15 @@ bool Chat::isManualMode() {
     return arg_->MANUAL_MODE;
 }
 
+void Chat::DestroyFileDescriptors(){
+  close(Parent_Write_fd);
+  close(Parent_Write_fd);
+}
+
+void Chat::DestroyPipe(){
+  unlink(sendPath_.c_str());
+}
+
 void Chat::showMsg(const std::string& name, const std::string& message) {
   using namespace ANSI_CODE;
   if (!arg_->BOT_MODE) {
@@ -104,8 +113,7 @@ void Chat::afficheMessageEnAttente() {
 }
 
 int Chat::sendMsg() {
-  int fd = open(sendPath_.c_str(), O_WRONLY);
-  if (fd == -1) {
+  if (Parent_Write_fd == -1) {
     perror("Failed to open");
     return -1;
   }
@@ -117,28 +125,27 @@ int Chat::sendMsg() {
   else if (arg_->MANUAL_MODE) {
     afficheMessageEnAttente();
   }
-  ssize_t bytesWritten = write(fd, message.c_str(), message.size());
+  ssize_t bytesWritten = write(Parent_Write_fd, message.c_str(), message.size());
   if (bytesWritten == -1) {
     perror("Write failed");
-    close(fd);
+    close(Parent_Write_fd);
     return -1;
   }
-  close(fd);
+  // close(Write_fd);
   return 0;
 }
 
 int Chat::receiveMsg() {
-  int fd = open(recvPath_.c_str(), O_RDONLY);
-  if (fd == -1) {
+  if (Child_Read_fd == -1) {
     perror("Failed to open");
     return -1;
   }
   std::string message{};
   char rbuffer[BUFFER_LENGTH];
-  ssize_t bytesWritten = read(fd, rbuffer, BUFFER_LENGTH);
+  ssize_t bytesWritten = read(Child_Read_fd, rbuffer, BUFFER_LENGTH);
   if (bytesWritten == -1) {
     perror("Read failed");
-    close(fd);
+    close(Child_Read_fd);
     return -1;
   }
   message += rbuffer;
@@ -148,7 +155,7 @@ int Chat::receiveMsg() {
   } else {
     showMsg(arg_->RECEIVER_NAME,message);
   }
-  close(fd);
+  // close(Read_fd);
   return 0;
 }
 
@@ -188,7 +195,7 @@ int Chat::createPipe() {
   // TODO: Implementation de semaphore binaire pour attendre la creation du
   //   pipe
   if (mkfifo(sendPath_.c_str(), 0666) == -1) {
-    perror("mkfifo");
+    perror("Couldn't execute mkfifo");
   }
   syncPipe();
   open_ = true;
@@ -199,11 +206,13 @@ int Chat::startProcess() {
   recvPid_ = fork();
   if (recvPid_ == 0) {
     // Receiver (child) process
+    Child_Read_fd = open(recvPath_.c_str(), O_RDONLY);
     while (open_) {
       receiveMsg();
     }
   } else if (recvPid_ > 0) {
     // Sender (parent) process
+    Parent_Write_fd = open(sendPath_.c_str(), O_WRONLY);
     while (open_) {
       sendMsg();
     }
