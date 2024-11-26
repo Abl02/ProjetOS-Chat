@@ -25,7 +25,10 @@ void handleSIGINT(int sig) {
             std::cout << "Signal SIGINT (" << sig << ") capturé par le parent --> terminaison des deux processus.\n";
             if (chat->getSecondProcessPID() > 0) {
                 kill(chat->getSecondProcessPID(), SIGTERM);  
-        } exit(4);
+        } 
+        chat->DestroyFileDescriptors();
+        chat->DestroyPipe();
+        exit(4);
         }
     } 
     
@@ -38,6 +41,8 @@ void handleSIGINT(int sig) {
 
 void handleSIGPIPE(int sig) {
     std::cerr << "Signal SIGPIPE (" << sig << "), Pipe cassé.\n";
+    chat->DestroyFileDescriptors();
+    chat->DestroyPipe();
     exit(1); 
 }
 
