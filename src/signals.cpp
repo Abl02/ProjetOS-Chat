@@ -18,7 +18,6 @@ void handleSIGINT(int sig) {
     // si c'est le processus principal, que les pipes sont ouverts et que le mode manuel est actif --> affiche messages en memoire. Sinon on termine les 2 processus avec code retour 4
     if (Pid == chat->getParentPid()) {
         if (chat->arePipesOpened() && chat->isManualMode() == 1) {
-            std::cout << "manual et ouvert" << std::endl;
             chat->afficheMessageEnAttente();
         } 
         else {
@@ -43,6 +42,7 @@ void handleSIGPIPE(int sig) {
     std::cerr << "Signal SIGPIPE (" << sig << "), Pipe cassé.\n";
     chat->DestroyFileDescriptors();
     chat->DestroyPipe();
+    kill(chat->getSecondProcessPID(), SIGTERM); 
     exit(1); 
 }
 
