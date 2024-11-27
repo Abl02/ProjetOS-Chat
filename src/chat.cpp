@@ -77,7 +77,7 @@ bool Chat::isManualMode() {
 
 void Chat::DestroyFileDescriptors(){
   close(Parent_Write_fd);
-  close(Parent_Write_fd);
+  close(Child_Read_fd);
 }
 
 void Chat::DestroyPipe(){
