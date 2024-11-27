@@ -13,6 +13,8 @@
 #include <iostream>
 #include <ostream>
 #include <utility>
+#include <signal.h>
+#include <stdlib.h> 
 #include <semaphore.h>
 
 #include "chat.hpp"
@@ -90,11 +92,11 @@ void Chat::showMsg(const std::string& name, const std::string& message) {
     std::string color{};
     if (name == arg_->SENDER_NAME) color = BOLDBLUE;
     if (name == arg_->RECEIVER_NAME) color = BOLDGREEN;
-    std::cout << color << " ["
+    std::cout << color << "["
             << UNDERLINE << name << RESET
             << color << "] " << RESET << message << std::endl;
   } else {
-    std::cout << " ["
+    std::cout << "["
             << name
             << "] " << message << std::endl;
   }
@@ -105,9 +107,8 @@ void Chat::afficheMessageEnAttente() {
    if (messages.empty()) {
         return;
     }
-  std::cout << "Messages en attente :\n";
     for (const auto& message : messages) {
-        std::cout << message << "\n";
+        showMsg(arg_->RECEIVER_NAME, message);
     }
     shared_memory_.reset_memory();
 }
@@ -119,10 +120,15 @@ int Chat::sendMsg() {
   }
   std::string message{};
   std::getline(std::cin, message);
+  if(!std::cin){
+    DestroyFileDescriptors();
+    DestroyPipe();
+    exit(0);
+  }
   if (!arg_->BOT_MODE) {
     showMsg(arg_->SENDER_NAME, message);
   }
-  else if (arg_->MANUAL_MODE) {
+  if (arg_->MANUAL_MODE) {
     afficheMessageEnAttente();
   }
   ssize_t bytesWritten = write(Parent_Write_fd, message.c_str(), message.size());
@@ -148,6 +154,11 @@ int Chat::receiveMsg() {
     close(Child_Read_fd);
     return -1;
   }
+  if(bytesWritten == 0){ 
+    DestroyFileDescriptors();
+    DestroyPipe();
+    exit(0);
+  }
   message += rbuffer;
   if (arg_->MANUAL_MODE) {
     std::cout << '\a' << std::flush;
@@ -167,7 +178,6 @@ size_t Chat::generateID() {
 
 int Chat::initSemaphore() {
   semName_ = "/" + std::to_string(chatID_) + ".chat";
-  std::cout << semName_ << std::endl;
   if ((syncSem_ = sem_open(semName_.c_str(), O_CREAT, 0644, 1)) == SEM_FAILED) {
     perror("semaphore initilization");
     return 1;
@@ -181,10 +191,8 @@ int Chat::syncPipe() {
     sem_init(syncSem_, 1, 0);
     int sem_value{};
     sem_getvalue(syncSem_, &sem_value);
-    std::cout << sem_value << " waiting..." << std::endl;
     sem_wait(syncSem_);
     sem_getvalue(syncSem_, &sem_value);
-    std::cout << sem_value << " unblocked" << std::endl;
   }
   sem_post(syncSem_);
   return 0;
