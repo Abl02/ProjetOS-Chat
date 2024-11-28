@@ -21,7 +21,7 @@ void handleSIGINT(int sig) {
     if (chat->arePipesOpened() && chat->isManualMode() == 1) {
       chat->afficheMessageEnAttente();
     } else {
-      std::cout
+      std::cerr
           << "Signal SIGINT (" << sig
           << ") capturé par le parent --> terminaison des deux processus.\n";
       if (chat->getSecondProcessPID() > 0) {
@@ -34,7 +34,7 @@ void handleSIGINT(int sig) {
   }
   // si c'est le second processus on ignore le signal
   else if (Pid == chat->getSecondProcessPID()) {
-    std::cout << "Signal SIGINT (" << sig
+    std::cerr << "Signal SIGINT (" << sig
               << ") capturé par second process --> Ignoré.\n";
   }
 }
