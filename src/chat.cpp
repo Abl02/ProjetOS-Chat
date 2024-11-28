@@ -144,11 +144,15 @@ int Chat::receiveMsg() {
     }
     message = buffer;
     if (arg_->MANUAL_MODE) {
-      std::cout << '\a' << std::flush;
+    bool IsEnoughSpace;
+    IsEnoughSpace = shared_memory_.add_message(message);
+    if (!IsEnoughSpace) {
+      afficheMessageEnAttente();
       shared_memory_.add_message(message);
-    } else {
-      showMsg(arg_->RECEIVER_NAME, message);
     }
+  } else {
+    showMsg(arg_->RECEIVER_NAME,message);
+  }
     delete[] buffer;
   }
   if (bytesRead == -1) {
