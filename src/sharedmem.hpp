@@ -1,6 +1,7 @@
 #ifndef SHAREDMEM_H
 #define SHAREDMEM_H
 
+#include <cstddef>
 #include <string>
 #include <vector>
 

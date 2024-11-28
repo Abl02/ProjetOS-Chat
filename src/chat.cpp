@@ -35,9 +35,21 @@ Chat::Chat(const std::string& sender, const std::string& receiver, bool botMode,
       open_(false) {
   SetChatInstance(*this);
   chatID_ = generateID();
-  initSemaphore();
-  if (createPipe() == 0) {
-    startProcess();
+  if (initSemaphore() != 0) throw std::runtime_error("Error during semaphore creation.");
+  if (createPipe() != 0) throw std::runtime_error("Error during pipe creation.");
+  if (startProcess() != 0) 
+  switch (startProcess()) {
+    case 1:
+      throw std::runtime_error("Error during fork()");
+      break;
+    case 2:
+      throw std::runtime_error("Error during open()");
+      break;
+    case 3:
+      throw std::runtime_error("Error during read() and write()");
+      break;
+    default:
+      break;
   }
 }
 
@@ -53,8 +65,21 @@ Chat::Chat(std::unique_ptr<Args> arg)
   SetChatInstance(*this);
   chatID_ = generateID();
   initSemaphore();
-  if (createPipe() == 0) {
-    startProcess();
+  if (initSemaphore() != 0) throw std::runtime_error("Error during semaphore creation.");
+  if (createPipe() != 0) throw std::runtime_error("Error during pipe creation.");
+  if (startProcess() != 0) 
+  switch (startProcess()) {
+    case 1:
+      throw std::runtime_error("Error during fork()");
+      break;
+    case 2:
+      throw std::runtime_error("Error during open()");
+      break;
+    case 3:
+      throw std::runtime_error("Error during read() and write()");
+      break;
+    default:
+      break;
   }
 }
 
@@ -71,6 +96,8 @@ pid_t Chat::getSecondProcessPID() { return recvPid_; }
 bool Chat::arePipesOpened() { return open_; }
 
 bool Chat::isManualMode() { return arg_->MANUAL_MODE; }
+
+bool Chat::isBotMode() { return arg_->BOT_MODE; }
 
 void Chat::DestroyFileDescriptors() {
   close(Parent_Write_fd);
@@ -138,21 +165,22 @@ int Chat::receiveMsg() {
     char* buffer = new char[size];
     bytesRead = read(Child_Read_fd, buffer, size);
     if (bytesRead < 0) {
+      delete[] buffer;
       perror("Read failed");
       close(Child_Read_fd);
       return -1;
     }
     message = buffer;
     if (arg_->MANUAL_MODE) {
-    bool IsEnoughSpace;
-    IsEnoughSpace = shared_memory_.add_message(message);
-    if (!IsEnoughSpace) {
-      afficheMessageEnAttente();
-      shared_memory_.add_message(message);
+      bool IsEnoughSpace;
+      IsEnoughSpace = shared_memory_.add_message(message);
+      if (!IsEnoughSpace) {
+        afficheMessageEnAttente();
+        shared_memory_.add_message(message);
+      }
+    } else {
+      showMsg(arg_->RECEIVER_NAME,message);
     }
-  } else {
-    showMsg(arg_->RECEIVER_NAME,message);
-  }
     delete[] buffer;
   }
   if (bytesRead == -1) {
@@ -172,8 +200,8 @@ size_t Chat::generateID() {
 int Chat::initSemaphore() {
   semName_ = "/" + std::to_string(chatID_) + ".chat";
   if ((syncSem_ = sem_open(semName_.c_str(), O_CREAT, 0644, 1)) == SEM_FAILED) {
-    perror("semaphore initilization");
-    return 1;
+    std::cerr << "sem_open: " << std::strerror(errno) << std::endl;
+    return -1;
   }
   return 0;
 }
@@ -181,19 +209,31 @@ int Chat::initSemaphore() {
 int Chat::syncPipe() {
   struct stat buffer;
   if (stat(recvPath_.c_str(), &buffer) != 0) {
-    sem_init(syncSem_, 1, 0);
-    sem_wait(syncSem_);
+    if (sem_init(syncSem_, 1, 0) == -1) {
+      std::cerr << "sem_init: " << std::strerror(errno) << std::endl;
+      return -1;
+    }
+    if (sem_wait(syncSem_) == -1) {
+      std::cerr << "sem_wait: " << std::strerror(errno) << std::endl;
+      return -1;
+    }
   }
-  sem_post(syncSem_);
+  if (sem_post(syncSem_) == -1) {
+    std::cerr << "sem_post: " << std::strerror(errno) << std::endl;
+    return -1;
+  }
   return 0;
 }
 
 int Chat::createPipe() {
   if (mkfifo(sendPath_.c_str(), 0666) == -1) {
-    perror("Couldn't execute mkfifo");
+    std::cerr << "mkfifo: " << std::strerror(errno) << std::endl;
   }
-  syncPipe();
-  open_ = true;
+  if (syncPipe() == 0) {
+    open_ = true;
+  } else {
+    return -1;
+  }
   return 0;
 }
 
@@ -201,24 +241,31 @@ int Chat::startProcess() {
   recvPid_ = fork();
   if (recvPid_ == 0) {
     // Receiver (child) process
-    Child_Read_fd = open(recvPath_.c_str(), O_RDONLY);
-    if (Child_Read_fd == -1) {
-      perror("Failed to open");
-      return -1;
+    if (open_) {
+      Child_Read_fd = open(recvPath_.c_str(), O_RDONLY);
+      if (Child_Read_fd == -1) {
+        std::cerr << "open: " << std::strerror(errno) << std::endl;
+        return 2;
+      }
+      if (receiveMsg() == -1) {
+        return 3;
+      }
     }
-    receiveMsg();
   } else if (recvPid_ > 0) {
     // Sender (parent) process
-    Parent_Write_fd = open(sendPath_.c_str(), O_WRONLY);
-    if (Parent_Write_fd == -1) {
-      perror("Failed to open");
-      return -1;
+    if (open_) {
+      Parent_Write_fd = open(sendPath_.c_str(), O_WRONLY);
+      if (Parent_Write_fd == -1) {
+        std::cerr << "open: " << std::strerror(errno) << std::endl;
+        return 2;
+      }
+      if (sendMsg() == -1) {
+        return 3;
+      }
     }
-    sendMsg();
     kill(recvPid_, SIGTERM);
   } else {
-    // std::cerr << FORK_ERROR << std::endl;
-    perror("fork()");
+    std::cerr << "fork: " << std::strerror(errno) << std::endl;
     return 1;
   }
   return 0;

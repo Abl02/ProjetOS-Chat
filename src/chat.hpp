@@ -27,6 +27,7 @@ class Chat {
   pid_t getSecondProcessPID();
   bool arePipesOpened();
   bool isManualMode();
+  bool isBotMode();
   void DestroyFileDescriptors();
   void DestroyPipe();
 

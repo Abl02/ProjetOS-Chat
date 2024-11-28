@@ -6,7 +6,7 @@
 void handleSIGINT(int sig);
 void handleSIGPIPE(int sig);
 void handleSIGTERM(int sig);
-void SetupSignaux();
+void SetupSignals();
 void SetChatInstance(Chat& chatInstance);
 
 #endif

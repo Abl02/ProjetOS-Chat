@@ -10,7 +10,7 @@
 
 int main(int argc, char* argv[]) {
   using namespace ERROR;
-  SetupSignaux();
+  SetupSignals();
   int errStatus{};
   std::string errMsg;
   std::unique_ptr<Args> arg =
@@ -32,6 +32,11 @@ int main(int argc, char* argv[]) {
                 << MORE_INFO << std::endl;
       return 4;
   }
+  try {
   Chat chat(std::move(arg));
+  } catch (const std::runtime_error& err) {
+    std::cerr << "Chat: " << err.what() << std::endl;
+    return 5;
+  }
   return 0;
 }

@@ -53,7 +53,7 @@ void handleSIGTERM(int sig) {
   exit(4);
 }
 
-void SetupSignaux() {
+void SetupSignals() {
   signal(SIGINT, handleSIGINT);
   signal(SIGPIPE, handleSIGPIPE);
   signal(SIGTERM, handleSIGTERM);

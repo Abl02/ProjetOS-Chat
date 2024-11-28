@@ -25,8 +25,8 @@ bool isHelpRequest(int argc, char* argv[]) {
 /**
  * Processes command-line options and sets flags for bot and manual modes.
  *
- * @param argc The number of command-line arguments.
- * @param argv The array of command-line argument.
+ * @param argc The number of arguments.
+ * @param argv The array of argument.
  * @param bot Reference to a boolean flag indicating bot mode.
  * @param manual Reference to a boolean flag indicating manual mode.
  * @return The index of the first invalid option. Returns 0 if all options are
@@ -81,7 +81,7 @@ Args parseArgs(int argc, char* argv[], int* err, std::string* msg) {
   std::string receiverName = std::string(argv[2]);
   bool bot = false;
   bool manual = false;
-  if (!isValidName(senderName, err)) return {};
+  if (!isValidName(senderName, err)) return {}; // Status 2 and 3
   if (!isValidName(receiverName, err)) return {};
   if (argc > 3) {
     int index = processOptions(argc, argv, bot, manual);
