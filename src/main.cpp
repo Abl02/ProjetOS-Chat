@@ -5,21 +5,21 @@
 
 #include "args.hpp"
 #include "chat.hpp"
-#include "utils.hpp"
 #include "signals.hpp"
-
-using namespace ERROR;
+#include "utils.hpp"
 
 int main(int argc, char* argv[]) {
+  using namespace ERROR;
   SetupSignaux();
   int errStatus{};
   std::string errMsg;
-  std::unique_ptr<Args> arg = std::make_unique<Args>(parseArgs(argc, argv, &errStatus, &errMsg));
+  std::unique_ptr<Args> arg =
+      std::make_unique<Args>(parseArgs(argc, argv, &errStatus, &errMsg));
   switch (errStatus) {
     case 0:  // No error
       break;
     case 1:
-      std::cerr << MISSING_ARGUMENT << std::endl << MORE_INFO << std::endl;
+      std::cerr << MISSING_ARGUMENT << std::endl;
       return 1;
     case 2:
       std::cerr << INVALID_USERNAME_LENGTH << std::endl;

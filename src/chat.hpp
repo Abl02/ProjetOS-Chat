@@ -1,20 +1,23 @@
 #ifndef CHAT_H
 #define CHAT_H
 
+#include <semaphore.h>
+
 #include <cstddef>
 #include <memory>
-#include <semaphore.h>
 #include <string>
-#include "args.hpp"
-#include "sharedmem.hpp" 
 
-const int BUFFER_LENGTH = 128;
+#include "args.hpp"
+#include "sharedmem.hpp"
+
+const int BUFFER_LENGTH = 4096;
 
 struct Args;
 
 class Chat {
  public:
-  Chat(const std::string &sender, const std::string &receiver, bool botMode, bool manualMode);
+  Chat(const std::string& sender, const std::string& receiver, bool botMode,
+       bool manualMode);
   Chat(std::unique_ptr<Args> arg);
   ~Chat();
 
@@ -58,4 +61,3 @@ class Chat {
 };
 
 #endif
-

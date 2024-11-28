@@ -1,0 +1,77 @@
+#!/bin/bash
+
+set +x
+
+trap 'cleanup' SIGINT
+
+function cleanup() {
+  if [[ -n "$CHAT_PID" ]]; then
+    kill "$CHAT_PID" 2>/dev/null
+  fi
+  exit 0
+}
+
+function read_msg () {
+  position=1
+  slice=$(echo "$1" | cut -d' ' -f$((position + 1))-)
+  if [[ "$slice" == "liste" ]]; then
+    array=(*)
+    read_command array
+  elif [[ "$slice" == "qui suis-je" ]]; then
+    echo "$2"
+  elif [[ "$slice" == "au revoir" ]]; then
+    cleanup
+  elif [[ "$(echo "$1" | awk '{print $2}')" == "li" ]]; then
+    array=()
+    input="$(echo "$1" | awk '{print $3}')"
+    while IFS= read -r line || [ -n "$line" ];
+    do
+      array+=("$line")
+    done < "$input"
+    read_command array
+  else
+    input="liste-bot.txt"
+    while IFS= read -r line
+    do
+      if [[ "$(echo "$line" | awk '{print $1}')" == "$(echo "$1" | awk '{print $2}')" ]] then
+        second_word=$(echo "$line" | cut -d' ' -f$((position + 1))-)
+        echo "$second_word"
+        return 0
+      fi
+    done < "$input"
+    echo -e '\xF0\x9F\xA4\x96 ?'
+  fi
+}
+
+function read_command() {
+  local -n arr=$1  
+  for elem in "${arr[@]}"; do
+    echo "$elem" >&"${CHAT[1]}"
+    sleep .01
+  done
+}
+
+# Check if first parameter exists
+if [ -z "$1" ]; then
+    echo "chat-bot destinataire [pseudo]" >&2
+    exit 1
+else
+    Interlocutor="$1"
+fi
+
+# Check if second parameter exists, if not, set it to "bot"
+if [ -z "$2" ]; then
+    Username="bot"
+else
+    Username="$2"
+fi
+coproc CHAT { ./chat bot "$Interlocutor" --bot; }
+CHAT_PID=$!
+while true; do
+  read msg <&"${CHAT[0]}" 
+  if [[ -z "$msg" ]]; then
+      break  # Exit the loop if no message is read
+  fi
+  read_msg "$msg" "$Interlocutor" >&"${CHAT[1]}" 2>&"${CHAT[1]}"
+done
+cleanup

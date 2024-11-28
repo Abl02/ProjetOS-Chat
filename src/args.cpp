@@ -1,8 +1,9 @@
+#include "args.hpp"
+
 #include <cstdlib>
 #include <cstring>
 #include <string>
 
-#include "args.hpp"
 #include "utils.hpp"
 
 Args::Args(std::string sender, std::string receiver, bool bot, bool manual)
@@ -36,14 +37,11 @@ int processOptions(int argc, char* argv[], bool& bot, bool& manual) {
     char* opt = argv[i];
     if (!strcmp(opt, "-b") || !strcmp(opt, "--bot")) {
       bot = true;
-    }
-    else if (!strcmp(opt, "-m") || !strcmp(opt, "--manuel")) {
+    } else if (!strcmp(opt, "-m") || !strcmp(opt, "--manuel")) {
       manual = true;
-    }
-    else if (!strcmp(opt, "-h") || !strcmp(opt, "--help")) {
+    } else if (!strcmp(opt, "-h") || !strcmp(opt, "--help")) {
       continue;
-    }
-    else {
+    } else {
       return i;
     }
   }
@@ -58,7 +56,7 @@ int processOptions(int argc, char* argv[], bool& bot, bool& manual) {
  * @param err Pointer to integer to store error status.
  * @return 'true' if the username is valid, 'false' otherwise.
  */
-bool isValidName(const std::string &name, int* err) {
+bool isValidName(const std::string& name, int* err) {
   if (name.length() > MAX_NAME_LENGTH) {
     if (err) *err = 2;  // Status 2: Invalid Length
     return false;
@@ -88,7 +86,7 @@ Args parseArgs(int argc, char* argv[], int* err, std::string* msg) {
   if (argc > 3) {
     int index = processOptions(argc, argv, bot, manual);
     if (index != 0) {
-      if (err) *err = 4;  // Status 4: Invalid Option
+      if (err) *err = 4;  // Status 4: Unknown Option
       if (msg) *msg = std::string(argv[index]);
     }
   }

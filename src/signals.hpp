@@ -9,5 +9,4 @@ void handleSIGTERM(int sig);
 void SetupSignaux();
 void SetChatInstance(Chat& chatInstance);
 
-
-#endif 
+#endif
