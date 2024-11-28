@@ -1,9 +1,10 @@
-#include <string>
-#include <sys/mman.h>
-#include <cstring>
-#include <vector>
-
 #include "sharedmem.hpp"
+
+#include <sys/mman.h>
+
+#include <cstring>
+#include <string>
+#include <vector>
 
 SharedMemory::SharedMemory() {
   shared_mem = static_cast<char*>(create_memory(MEMORY_SIZE));
@@ -34,10 +35,7 @@ bool SharedMemory::add_message(const std::string& message) {
   return false;
 }
 
-void SharedMemory::reset_memory() {
-  munmap(shared_mem, MEMORY_SIZE);
-  shared_mem = static_cast<char*>(create_memory(MEMORY_SIZE));
-}
+void SharedMemory::reset_memory() { memset(shared_mem, 0, MEMORY_SIZE); }
 
 void* SharedMemory::create_memory(size_t size) {
   const int protection = PROT_READ | PROT_WRITE;

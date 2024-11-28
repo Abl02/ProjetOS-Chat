@@ -4,14 +4,14 @@
 #include <string>
 
 namespace ANSI_CODE {
-const std::string RESET = "\033[0m";                // Default
-const std::string UNDERLINE = "\033[4m";            // Underline
-const std::string GREEN = "\033[32m";               // Green
-const std::string BLUE = "\033[34m";                // Blue
-const std::string BOLDGREEN = "\033[1m\033[32m";    // Bold Green
-const std::string BOLDBLUE = "\033[1m\033[34m";     // Bold Blue
-const std::string BOLDWHITE = "\033[1m\033[37m";    // Bold White
-}  // namespace COLORS
+const std::string RESET = "\033[0m";              // Default
+const std::string UNDERLINE = "\033[4m";          // Underline
+const std::string GREEN = "\033[32m";             // Green
+const std::string BLUE = "\033[34m";              // Blue
+const std::string BOLDGREEN = "\033[1m\033[32m";  // Bold Green
+const std::string BOLDBLUE = "\033[1m\033[34m";   // Bold Blue
+const std::string BOLDWHITE = "\033[1m\033[37m";  // Bold White
+}  // namespace ANSI_CODE
 
 namespace ERROR {  // Error message
 inline const std::string SENDER_PIPE_ERROR =
